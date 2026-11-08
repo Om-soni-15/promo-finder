@@ -1,0 +1,7 @@
+.cache/
+outputs/
+*.zip
+__pycache__/
+*.txt
+!requirements.txt
+.env

@@ -1,0 +1,45 @@
+# promo-finder configuration. Everything here can also be overridden on the command line.
+
+mode: rules            # rules (no API key needed) | llm (rules + LLM finder + LLM judge)
+
+llm:
+  provider: gemini     # gemini | openai | anthropic | mock
+  model: gemini-3.8-flash
+  api_key_env: GEMINI_API_KEY
+  temperature: 0.3
+  max_tokens: 16384
+  min_interval_sec: 13 # free tier is ~5 requests/min; set 0 for paid / internal APIs
+  retries: 4
+  timeout_sec: 180
+  cache: true
+  cache_dir: .cache/llm
+
+# Ready-made provider presets (copy into `llm:` or use --provider/--model/--base-url):
+#   Groq (free):        provider: openai, base_url: https://api.groq.com/openai/v1,
+#                       model: llama-3.3-70b-versatile, api_key_env: GROQ_API_KEY
+#   OpenRouter:         provider: openai, base_url: https://openrouter.ai/api/v1, api_key_env: OPENROUTER_API_KEY
+#   Ollama (local):     provider: openai, base_url: http://localhost:11434/v1, model: qwen2.5:14b
+#   Kuku gateway:       provider: openai, base_url: <their URL>, model: <their model>, api_key_env: <their key var>
+#   Anthropic:          provider: anthropic, model: <model id>, api_key_env: ANTHROPIC_API_KEY
+
+llm_pipeline:
+  episodes_per_call: 2    # episodes sent per finder call (fewer calls on rate-limited free tiers)
+  promos_per_episode: 3
+  cross_promos: 6
+  judge_top_n: 40         # only the strongest candidates go to the (more expensive) judge
+  judge_batch: 6
+
+rules:
+  per_episode: 3
+  cross_limit: 8
+
+ranking:
+  judge_weights: {hook: 0.30, cliffhanger: 0.25, standalone: 0.25, intensity: 0.20}
+  early_episode_max: 5    # promos opening in Ep 1-5 send a newcomer to the start of the show
+  early_bonus: 6
+  mid_episode_max: 15
+  mid_bonus: 3
+  late_fraction: 0.8      # clips from the last 20% of available episodes risk spoiling the payoff
+  late_penalty: 6
+  flag_penalty: 2
+  post_first_n: 10
